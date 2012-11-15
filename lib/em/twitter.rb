@@ -61,12 +61,24 @@ module EM
       tokenizer = BufferedTokenizer.new
       http      = conn.apost(keepalive: true)
 
+      # TODO alerts
+      http.headers do |header|
+        case header.status
+          when 200
+            puts "INFO: connected"
+          else
+            raise Error, code: header.status, message: 'Twitter API Error'
+        end
+      end
+
       http.stream do |chunk|
-        tokenizer.extract(chunk).each do |data|
-          begin
-            block.call(Yajl.load(data))
-          rescue => e
-            puts "ERROR: #{data}", e.message, e.backtrace.take(10).join($/)
+        if http.response_header.status == 200
+          tokenizer.extract(chunk).each do |data|
+            begin
+              block.call(Yajl.load(data))
+            rescue => e
+              puts "ERROR: #{data}", e.message, e.backtrace.take(10).join($/)
+            end
           end
         end
       end
