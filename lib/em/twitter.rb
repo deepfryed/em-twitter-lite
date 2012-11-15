@@ -61,13 +61,12 @@ module EM
       tokenizer = BufferedTokenizer.new
       http      = conn.apost(keepalive: true)
 
-      # TODO alerts
       http.headers do |header|
         case header.status
           when 200
             puts "INFO: connected"
           else
-            raise Error, code: header.status, message: 'Twitter API Error'
+            block.call(nil, Error.new(code: header.status, message: 'Twitter API Error'))
         end
       end
 
