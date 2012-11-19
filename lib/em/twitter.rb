@@ -116,8 +116,12 @@ module EM
         when 420
           raise Error, code: 420, retry_after: http.response_header['RETRY_AFTER']
         else
-          raise Error, code: http.response_header.status
+          raise Error, code: http.response_header.status, message: parse_error_response(http.response)
       end
+    end
+
+    def parse_error_response json
+      (Hash === json ? json : JSON.parse(json))['errors'].map {|error| error['message']}.join($/)
     end
 
     def hashtags list
