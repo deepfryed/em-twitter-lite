@@ -53,13 +53,13 @@ module EM
     end
 
     def stream options, &block
-      uri  = Addressable::URI.parse(STREAM_URI).tap {|u| u.query_values = STREAM_OPTIONS.merge(options)}
+      uri  = Addressable::URI.parse(STREAM_URI)
       conn = EM::HttpRequest.new(uri.to_s, connect_timeout: 10, inactivity_timeout: 86400, ssl: {verify_peer: false})
 
       conn.use EM::Middleware::OAuth, config
 
       tokenizer = BufferedTokenizer.new
-      http      = conn.apost(keepalive: true)
+      http      = conn.apost(keepalive: true, body: options)
 
       http.headers do |header|
         case header.status
